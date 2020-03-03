@@ -1,0 +1,85 @@
+---
+title: "Kickstarter Campaign Visualization"
+author: "by Gabriel Erichson"
+output: 
+  html_document:
+    df_print: paged
+    code_folding: hide
+    toc: true
+    toc_depth: 3
+    toc_float: 
+        collapsed: true
+    number_sections: true
+    theme: sandstone
+    highlight: haddock
+    css: style.css
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  result="hide",
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  comment = "#>"
+)
+
+options(scipen = 9999999)
+library(lubridate)
+library(scales)
+library(tidyr)
+library(ggplot2)
+library(ggthemes)
+library(paletti)
+
+
+# WARNA
+mycolor = c(
+  dark_blue="#003f5c", 
+  light_blue="#2f4b7c", 
+  light_purple ="#665191",
+  dark_pink="#a05195", 
+  light_pink="#d45087", 
+  light_red="#f95d6a", 
+  dark_orange="#ff6347",
+  light_orange="#ff7c43",
+  semi_orange="#e79658",
+  orange="#dda15a",
+  cream="#b59378",
+  dark_cream="#A57F5F",
+  choc="#85664B",
+  dark_choc="#6b5340"
+)
+
+mycolorfill = c(
+  
+  light_blue="#2f4b7c", 
+  light_purple ="#665191",
+  dark_pink="#a05195", 
+  light_pink="#d45087", 
+  light_red="#f95d6a", 
+  dark_orange="#ff6347",
+  
+  semi_orange="#e79658",
+  orange="#dda15a",
+  cream="#b59378",
+  dark_cream="#A57F5F",
+  choc="#85664B",
+  dark_choc="#6b5340",
+  light_orange="#ff7c43"
+)
+
+
+viz_palette(mycolor)
+mycolor_fill  <- get_scale_fill(get_pal(mycolorfill))
+mycolor_color <- get_scale_color(get_pal(mycolor))
+mycolor_hex <- get_hex(mycolor)
+
+```
+
+```{r}
+
+```
+
