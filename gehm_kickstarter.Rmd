@@ -79,7 +79,13 @@ mycolor_hex <- get_hex(mycolor)
 
 ```
 
-```{r}
 
-```
+<br/>
+**ABSTRACT** <br/>
+Kickstarter adalah sebuah platform yang memberikan ruang pendanaan untuk proyek kreatif secara crowdfunding. Informasi lengkap tentang kickstarter bisa mengunjungi web https://www.kickstarter.com/ . Tujuan dari proyek ini adalah untuk memprediksi jumlah pembiayaan yang didapatkan sebuah proyek dan keberhasilan atau kegagalan kampanye Kickstarter saat diluncurkan.<br/><br/>
 
+**INTRODUCTION**<br/>
+`Crowdfunding` adalah praktik mendanai proyek, usaha atau lainnya dengan meningkatkan kontribusi moneter dari banyak orang. Saat ini banyak proses crowdfunding terjadi secara online melalui berbagai situs web dan salah satunya adalah Kickstarter. Aspek yang paling penting tentang meluncurkan proyek di Kickstarter adalah bahwa jika proyek gagal memenuhi tujuan pendanaan minimumnya, maka proyek tidak akan menerima dana apa pun. Proyek Kickstarter yang dianalisis kali ini termasuk dalam salah satu dari 14 kategori (Art, Comics, Dance, Design, Fashion, Film & Video, Film & amp; Video, Food, Games, Music, Photography, Publishing, Technology, Theater dan 51 subkategori.<br/><br/>
+
+**PRELIMINARY ANALYSIS**<br/>
+Dataset untuk proyek ini diambil dari repositori `webroboto.io`. Mereka mengembangkan scrapper robot yang mengambil semua data proyek Kickstarter secara bulanan semenjak 2009. Ada kemungkinan data proyek tidak lengkap atau terjadi duplikasi dalam dataset karena perubahan dalam pendekatan pengumpulan data oleh webroboto.io. Hal ini disampaikan oleh pihak `webroboto.io` pada situs web https://webrobots.io/kickstarter-datasets/ . Dataset yang dianalisis mulai dari 2009-2019 dengan jumlah data raw sebanyak 211.076 observasi. Setiap proyek kicstarter memiliki status `failed`, `successful`, `live`, `suspended` atau `canceled`. Dalam analisis ini, saya hanya tertarik pada proyek kicktarter yang sukses atau gagal, sehingga saya memutuskan untuk membuang data observasi dengan status lainnya. Selain itu, saya juga membuang data proyek kickstarter yang memiliki Missing Value karena dapat mempengaruhi proses pemodelan. Sehingga dataset yang digunakan untuk analisis dan pemodelan ini memiliki 164,970 observasi dan 14 variabel.<br/><br/>
