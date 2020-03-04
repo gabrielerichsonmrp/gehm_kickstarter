@@ -16,7 +16,7 @@ output:
   pdf_document: default
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,
   result="hide",
@@ -28,8 +28,9 @@ knitr::opts_chunk$set(
 
 options(scipen = 9999999)
 library(lubridate)
+library(countrycode)
 library(scales)
-library(tidyr)
+library(tidyverse)
 library(ggplot2)
 library(ggthemes)
 library(paletti)
@@ -80,12 +81,269 @@ mycolor_hex <- get_hex(mycolor)
 ```
 
 
+# Intro
+
+## Tentang Kickstarter
+
+Kickstarter adalah sebuah online platform yang memberikan ruang pendanaan untuk proyek kreatif secara crowdfunding. `Crowdfunding` adalah praktik mendanai proyek, usaha atau lainnya dengan meningkatkan kontribusi moneter dari banyak orang. Saat ini banyak proses crowdfunding terjadi secara online melalui berbagai situs web dan salah satunya adalah Kickstarter. Aspek yang paling penting tentang meluncurkan Projeck Campaign di Kickstarter adalah bahwa jika proyek gagal memenuhi tujuan pendanaan minimumnya, maka proyek tidak akan menerima dana apa pun. Proyek yang ada di Kickstarter terdiri dari berbagai kategori antara lain **Film & Video**, **Art**, **Photography**, **Fashion**, **Technology**,   **Crafts**, **Music**, **Games**, **Publishing**, **Theater**, **Comics**, **Food**, **Design**, **Journalism** dan **Dance**. Informasi lengkap tentang kickstarter bisa mengunjungi web https://www.kickstarter.com/ . 
 <br/>
-**ABSTRACT** <br/>
-Kickstarter adalah sebuah platform yang memberikan ruang pendanaan untuk proyek kreatif secara crowdfunding. Informasi lengkap tentang kickstarter bisa mengunjungi web https://www.kickstarter.com/ . Tujuan dari proyek ini adalah untuk memprediksi jumlah pembiayaan yang didapatkan sebuah proyek dan keberhasilan atau kegagalan kampanye Kickstarter saat diluncurkan.<br/><br/>
 
-**INTRODUCTION**<br/>
-`Crowdfunding` adalah praktik mendanai proyek, usaha atau lainnya dengan meningkatkan kontribusi moneter dari banyak orang. Saat ini banyak proses crowdfunding terjadi secara online melalui berbagai situs web dan salah satunya adalah Kickstarter. Aspek yang paling penting tentang meluncurkan proyek di Kickstarter adalah bahwa jika proyek gagal memenuhi tujuan pendanaan minimumnya, maka proyek tidak akan menerima dana apa pun. Proyek Kickstarter yang dianalisis kali ini termasuk dalam salah satu dari 14 kategori (Art, Comics, Dance, Design, Fashion, Film & Video, Film & amp; Video, Food, Games, Music, Photography, Publishing, Technology, Theater dan 51 subkategori.<br/><br/>
+## PRELIMINARY ANALYSIS
 
-**PRELIMINARY ANALYSIS**<br/>
-Dataset untuk proyek ini diambil dari repositori `webroboto.io`. Mereka mengembangkan scrapper robot yang mengambil semua data proyek Kickstarter secara bulanan semenjak 2009. Ada kemungkinan data proyek tidak lengkap atau terjadi duplikasi dalam dataset karena perubahan dalam pendekatan pengumpulan data oleh webroboto.io. Hal ini disampaikan oleh pihak `webroboto.io` pada situs web https://webrobots.io/kickstarter-datasets/ . Dataset yang dianalisis mulai dari 2009-2019 dengan jumlah data raw sebanyak 211.076 observasi. Setiap proyek kicstarter memiliki status `failed`, `successful`, `live`, `suspended` atau `canceled`. Dalam analisis ini, saya hanya tertarik pada proyek kicktarter yang sukses atau gagal, sehingga saya memutuskan untuk membuang data observasi dengan status lainnya. Selain itu, saya juga membuang data proyek kickstarter yang memiliki Missing Value karena dapat mempengaruhi proses pemodelan. Sehingga dataset yang digunakan untuk analisis dan pemodelan ini memiliki 164,970 observasi dan 14 variabel.<br/><br/>
+Tujuan dari projek ini adalah untuk menganalisa dan memvisualisasikan data kickstarter untuk mendapatkan informasi penting yang berkaitan. Dataset untuk proyek ini diambil dari repositori `webroboto.io`. Mereka mengembangkan scrapper robot yang mengambil semua data proyek Kickstarter secara bulanan semenjak 2009. Ada kemungkinan data proyek tidak lengkap atau terjadi duplikasi dalam dataset karena perubahan dalam pendekatan pengumpulan data oleh webroboto.io. Hal ini disampaikan oleh pihak `webroboto.io` pada situs web https://webrobots.io/kickstarter-datasets/ . Dataset yang dianalisis mulai dari 2009-2019 dengan jumlah data raw sebanyak 211.076 observasi.Setiap proyek kicstarter memiliki status *failed*, *successful*, *live*, *suspended* atau *canceled*. Dalam analisis ini, saya hanya tertarik pada proyek kicktarter yang memiliki status *successful* atau *failed*, sehingga saya memutuskan untuk membuang data observasi dengan status lainnya.<br/><br/>
+
+
+# Data Preparation
+## Export Raw Data
+Hasil download file .csv dari webroboto.io berupa zipfile, yang dimana setelah diekstrak akan mendapatkan **57 file .csv** dengan total ukuran penyimpanan sebesar **1,05 GB**. Seluruh data dari file .csv ini harus disatukan dahulu untuk mempermudah proses eksplorasi data. Setelah menyatukan data, saya cek kalau data kategori proyek disimpan didalam variabel `category` yang memiliki value berbentuk JSON values, sehingga perlu diekstrak dahulu untuk mengambil komponen variabel `parent_name` sebagai main_category dan `name` sebagai sub_category. Untuk melakukan tahapan proses tersebut, saya membuat fungsi **MergeKSFiles** dibawah ini. <br><br>
+
+Pada RStudio, proses pembacaan data file dalam format .rds lebih cepat dibandingkan .csv dan ukuran penyimpanan datanya juga lebih kecil. Fungsi **MergeKSFiles** akan mengekspor hasil merge menjadi bentuk format file **.rds**. ZipFile dari Raw data tidak saya sertakan dalam package projek ini karena terlalu besar, namun bisa didownload pada link berikut: https://s3.amazonaws.com/weruns/forfun/Kickstarter/Kickstarter_2020-02-13T03_20_04_893Z.zip
+
+```{r}
+# Fungsi ini hanya dapat digunakan untuk kumpulan data csv kickstarter yang di download dari webroboto.io.
+# Estimasi running time 8 menit untuk 60 csv files dengan total 200.000 baris data.
+# Hasil dari fungsi ini berbentuk file .rds
+
+MergeKSFiles <- function(){
+  # get dan set direktori
+  wd <-  as.character(getwd())
+  setwd(paste(wd,"/data_extract",sep = ""))
+  
+  # menyimpan seluruh file *csv menjadi list
+  dir <- list.files(pattern = "*.csv")
+  myfiles <- lapply(dir,read_csv)
+  
+  # merge seluruh data dan menyimpan dalam variabel kick_raw
+  kick_raw <- myfiles %>% bind_rows(.id = "filename")
+  
+  # ekstrak data main_category dan sub_category DARI JSON Value
+  # jalankan library plyr sebelum menjalankan library dplyr
+  category_raw <- map(as.character(kick_raw$category),fromJSON)
+  category_raw <- plyr::ldply(category_raw, data.frame)
+  category_raw <- category_raw[,c("parent_name","name")]
+  colnames(category_raw) = c("main_category","sub_category")
+  kick_raw <- cbind(category_raw,kick_raw)
+  
+  # Export RDS file dan simpan dengan nama kick_raw.rds
+  saveRDS(object=kick_raw, file=paste(paste(wd,"/data_raw/",sep = ""),"ks_raw.rds",sep=""))
+  
+}
+
+# jalankan fungsi ini untuk merge dan ekstrak data category
+# MergeKSFiles()
+```
+
+
+## Read Raw Data
+
+Setelah sukses mengekspor data raw menjadi .rds, total data yang didapat sebanyak 211,076 observasi dan 41 variabel dengan ukuran penyimpanan data sebesar **164 MB**. Ukuran penyimpanan datanya sangat signifikan berkurang sehingga dapat mempercepat performance pengelolaan data.
+```{r}
+ks_raw <- readRDS("data_input/ks_raw.rds")
+glimpse(ks_raw)
+```
+
+
+# Data Pre-Processing
+## Data Cleansing
+### Validasi dan Seleksi Variabel
+Jika dilihat pada struktur data **ks_raw**, variabel yang ada cukup banyak namun tidak semua variabel tersebut akan gunakan. Selain itu  tipe data dari masing-masing variabel juga belum sesuai dengan kebutuhan, sehingga perlu perlu dilakukan Konversi data type dan menyeleksi variabel yang diunakan sesuai kebutuhan analisa kali ini saja. Oleh karena itu perlu dilakukan tahap berikut:
+  1. Validasi tipe data<br>
+  2. Konversi format tanggal *created_at*, *deadline*, *launched_at*<br>
+  3. Mendapatkan data total hari project campaign: $total\ days = launched\ date - created\ at$ <br>
+  4. Mendapatkan data goal project dalam satuan USD: $usd\ goal = goal \ *\  static\ usd\ rate$ <br>
+  5. Mendapatkan tahun dimulainya project campaign: *year_created = as.factor(ordered(year(created_at)))* <br>
+  6. Seleksi data tahun mulai campaign < 2020 karena tahun 2020 masih berjalan. <br>
+  7. Seleksi variabel yang dibutuhkan: *project_name*, *main_category*, *sub_category*, *country_code*, *country_name*, *year_created*, *created_at*, *launched_at*, *deadline*, *total_days*, *usd_goal*, *backers_count*, *static_usd_rate*, *usd_pledged,state* <br>
+  8. Mengkonversi data *project_name* menjadi lower case (untuk validasi data unik) <br>
+  9.Memyimpan hasil data kedalam variabel *ks_input*
+  
+```{r}
+ks_input <- ks_raw 
+
+# Konversi Data Type
+ks_input$main_category = as.factor(ks_input$main_category)
+ks_input$sub_category = as.factor(ks_input$sub_category)
+ks_input$converted_pledged_amount = as.integer(ks_input$converted_pledged_amount)
+ks_input$country_code = as.factor(countrycode::countrycode(ks_input$country,"iso2c","iso3c"))
+ks_input$country_name = as.factor(ks_input$country_displayable_name)
+ks_input$fx_rate = as.numeric(ks_input$fx_rate)
+ks_input$goal = as.numeric(ks_input$goal)
+ks_input$created_at = as.Date(as.POSIXlt.POSIXct(ks_input$created_at))
+ks_input$launched_at =  as.Date(as.POSIXlt.POSIXct(ks_input$launched_at))
+ks_input$deadline = as.Date(as.POSIXlt.POSIXct(ks_input$deadline))
+ks_input$total_days = as.integer(ks_input$deadline-ks_input$launched_at)
+ks_input$project_name = as.character(ks_input$name)
+ks_input$project_name = stringr::str_to_lower(ks_input$project_name)
+ks_input$pledged = as.numeric(ks_input$pledged)
+ks_input$state = as.factor(ks_input$state)
+ks_input$static_usd_rate = as.numeric(ks_input$static_usd_rate)
+ks_input$usd_goal = ks_input$goal*ks_input$static_usd_rate
+ks_input$usd_pledged = as.numeric(ks_input$usd_pledged)
+ks_input$main_category <- droplevels(ks_input$main_category)
+ks_input$sub_category <- droplevels(ks_input$sub_category)
+ks_input$country_code <- droplevels(ks_input$country_code)
+ks_input$country_name <- droplevels(ks_input$country_name)
+ks_input$state <- droplevels(ks_input$state)
+
+# seleksi project campaign dibawah tahun 2020
+ks_input <- ks_input[year(ks_input$launched_at) <2020,]
+ks_input <- ks_input[year(ks_input$deadline) <2020,]
+
+# seleksi project campaign dengan status successful atau failed
+ks_input <- ks_input[ks_input$state %in% c('successful','failed'),]
+
+# seleski hanya variabel yang digunakan saja
+ks_input <- ks_input[,c("project_name","main_category","sub_category","country_code","country_name","created_at","launched_at","deadline","total_days","usd_goal","backers_count","usd_pledged","state")]
+
+glimpse(ks_input)
+```
+
+Setelah dilakukan konversi dan seleksi data, dataset yang dimiliki tersisa **191,210 observasi dan 13 variabel**.
+
+
+### Missing Value
+```{r}
+colSums(is.na(ks_input))
+```
+
+Jika dilihat data main_category memiliki *6950* Missing values. Mari mengexplore data yang memilki missing value.
+
+**Eksplorasi Missing Value**
+```{r}
+ks_input[is.na(ks_input$main_category),]
+```
+
+jika dicek pada data yang memiliki missing value, data sub_category seharusnya merupakan data main_category dan yang memiliki missing value seharusnya data sub_category. Berikut data main_category:
+
+```{r}
+# Data main_category
+levels(ks_input$main_category)
+```
+
+Maka solusinya yaitu subtitusi value **main_category = sub_category** dan **sub_category = NAValue** untuk data yang memiliki **main_category=NA Values**. Dengan begini, sub_category akan memiliki NA Values.
+
+```{r}
+#Data unik dari sub_category yang memiliki missing value main_category
+
+ks_input$main_category <- ifelse(is.na(ks_input$main_category),as.character(ks_input$sub_category), as.character(ks_input$main_category))
+ks_input$sub_category <- ifelse(ks_input$main_category==ks_input$sub_category,NA, as.character(ks_input$sub_category))
+
+ks_input$main_category <-  as.factor(ks_input$main_category)
+ks_input$sub_category <-  as.factor(ks_input$sub_category)
+
+# Missing Value
+colSums(is.na(ks_input))
+dim(ks_input)
+```
+
+Setelah dilakukan subtitusi, variabel yang memilki missing values menjadi sub_category sebanyak **6950 observasi**.
+
+
+### Duplikat Value
+```{r}
+data.frame(cbind("Total Data Seluruhnya"=dim(ks_input)[1], "Total Data Unik"=dim(unique(ks_input))[1]))
+```
+
+Berdasarkan jumlah diatas, total observasi yang dimiliki sebanyak **191,210** namun total data yang unik sebanyak **170,124**. Hal ini membuktikan bahwa dataset ini memiliki data yang duplikat, sehingga data duplikat perlu dibuang.
+
+```{r}
+#Remove data duplikat
+ks_input <- unique(ks_input) 
+data.frame(cbind("Total Data Seluruhnya"=dim(ks_input)[1], "Total Data Unik"=dim(unique(ks_input))[1]))
+```
+
+Setelah data duplikat dibuang, total observasi yang dimiliki sebanyak **170,124**.
+
+
+
+## Data Inspection
+Setelah melakukan proses cleansing data, total observasi atas dataset Kickstarter Campaign yang dimiliki sebanyak **170,124** dan **14 variabel**. Namun, data yang tidak memiliki sub category sebanyak **6,950** atau **4,1%**.
+
+### 100 Data Teratas
+```{r}
+head(ks_input,100)
+```
+
+### 100 Data Terbawah
+```{r}
+tail(ks_input,100)
+```
+
+<br>
+
+### Deskripsi Variabel
+
+<table class="table table-condensed">
+  <tr>
+    <th>Variabel</th>
+    <th>Deskripsi Informasi</th>
+  </tr>
+  <tr>
+    <td>project_name</td>
+    <td>Nama dari setiap project</td>
+  </tr>
+   <tr>
+    <td>main_category</td>
+    <td>Kategori Project</td>
+  </tr>
+   <tr>
+    <td>sub_category</td>
+    <td>Sub Kategori dari project</td>
+  </tr>
+   <tr>
+    <td>country_code</td>
+    <td>Kode Negara dimana project dibuat</td>
+  </tr>
+   <tr>
+    <td>country_name</td>
+    <td>Nama Negara dimana project dibuat</td>
+  </tr>
+   <tr>
+    <td>created_at</td>
+    <td>Tanggal Project Campaign dibuat pada masing-masing project</td>
+  </tr>
+   <tr>
+    <td>launched_at</td>
+    <td>Tanggal Project Campaign launch atau dimulai pada masing-masing project</td>
+  </tr>
+  <tr>
+    <td>deadline</td>
+    <td>Tanggal Project Campaign berakhir pada masing-masing project</td>
+  </tr>
+  <tr>
+    <td>total_days</td>
+    <td>Total hari campaign atau total hari setiap project berhak mendapatkan pendanaan</tr>
+  </tr>
+  <tr>
+    <td>usd_goal</td>
+    <td>Target pendanaan minimun dalam satuan USD.</td>
+  </tr>
+  <tr>
+    <td>backers_count</td>
+    <td>Jumlah pemberi dana</td>
+  </tr>
+  <tr>
+    <td>usd_pledged</td>
+    <td>Total pendapatan pendanaan yang didapatkan selama campaign berlangsung dalam satuan USD</td>
+  </tr>
+  <tr>
+    <td>state</td>
+    <td>Status campaign. Status dikatakan sukses apabila total pendapatan pendanaan lebih >= target pendanaan minimum</td>
+  </tr>
+</table>
+
+<br>
+
+### Export Data Clean
+Setelah data diolah sesuai kebutuhan analisis ini, maka clean data saya export dan diimport kembali dengan nama *ks_clean*. Ukuran data ks_clean setelah diexport turun sangat signifikan menjadi 6,8 MB. 
+
+**Notes**: Supaya project ini dapat diupload ke github maka data raw dan data download diawal tidak saya upload ke github karena maximal upload hanya 100 MB.
+
+
+```{r}
+#Export Data Clean
+wd <-  as.character(getwd())
+saveRDS(object=ks_input, file=paste(paste(wd,"/data_clean/",sep = ""),"ks_clean.rds",sep=""))
+ks_clean <- readRDS("data_clean/ks_clean.rds")
+```
+
