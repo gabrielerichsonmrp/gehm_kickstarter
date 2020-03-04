@@ -1,5 +1,6 @@
 ---
-title: "Kickstarter Campaign Visualization"
+title: "Kickstarter Campaign"
+subtitle: "Data Analysis and Visualization"
 author: "by Gabriel Erichson"
 output: 
   html_document:
@@ -138,7 +139,7 @@ MergeKSFiles <- function(){
 
 Setelah sukses mengekspor data raw menjadi .rds, total data yang didapat sebanyak 211,076 observasi dan 41 variabel dengan ukuran penyimpanan data sebesar **164 MB**. Ukuran penyimpanan datanya sangat signifikan berkurang sehingga dapat mempercepat performance pengelolaan data.
 ```{r}
-ks_raw <- readRDS("data_input/ks_raw.rds")
+ks_raw <- readRDS("data_raw/ks_raw.rds")
 glimpse(ks_raw)
 ```
 
