@@ -16,7 +16,8 @@ output:
     css: style.css
   pdf_document: default
 ---
-
+Github: https://github.com/gabrielerichsonmrp/gehm_kickstarter
+<br>
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -35,6 +36,9 @@ library(tidyverse)
 library(ggplot2)
 library(ggthemes)
 library(paletti)
+library(jsonlite)
+library(gridExtra)
+library(grid)
 
 
 # WARNA
@@ -84,83 +88,96 @@ mycolor_hex <- get_hex(mycolor)
 
 # Intro
 
+
 ## Tentang Kickstarter
 
-Kickstarter adalah sebuah online platform yang memberikan ruang pendanaan untuk proyek kreatif secara crowdfunding. `Crowdfunding` adalah praktik mendanai proyek, usaha atau lainnya dengan meningkatkan kontribusi moneter dari banyak orang. Saat ini banyak proses crowdfunding terjadi secara online melalui berbagai situs web dan salah satunya adalah Kickstarter. Aspek yang paling penting tentang meluncurkan Projeck Campaign di Kickstarter adalah bahwa jika proyek gagal memenuhi tujuan pendanaan minimumnya, maka proyek tidak akan menerima dana apa pun. Proyek yang ada di Kickstarter terdiri dari berbagai kategori antara lain **Film & Video**, **Art**, **Photography**, **Fashion**, **Technology**,   **Crafts**, **Music**, **Games**, **Publishing**, **Theater**, **Comics**, **Food**, **Design**, **Journalism** dan **Dance**. Informasi lengkap tentang kickstarter bisa mengunjungi web https://www.kickstarter.com/ . 
+Kickstarter adalah sebuah online platform yang memberikan ruang pendanaan untuk proyek kreatif secara crowdfunding. Aspek yang paling penting tentang meluncurkan Project Campaign di Kickstarter yaitu jika project campaign gagal memenuhi tujuan pendanaan minimumnya, maka proyek terkait tidak akan menerima dana apa pun. Proyek yang ada di Kickstarter terdiri dari berbagai kategori antara lain **Film & Video**, **Art**, **Photography**, **Fashion**, **Technology**,   **Crafts**, **Music**, **Games**, **Publishing**, **Theater**, **Comics**, **Food**, **Design**, **Journalism** dan **Dance**. Informasi lengkap tentang kickstarter bisa mengunjungi web https://www.kickstarter.com/ . 
 <br/>
 
-## PRELIMINARY ANALYSIS
+## Preliminary Analysis
 
-Tujuan dari projek ini adalah untuk menganalisa dan memvisualisasikan data kickstarter untuk mendapatkan informasi penting yang berkaitan. Dataset untuk proyek ini diambil dari repositori `webroboto.io`. Mereka mengembangkan scrapper robot yang mengambil semua data proyek Kickstarter secara bulanan semenjak 2009. Ada kemungkinan data proyek tidak lengkap atau terjadi duplikasi dalam dataset karena perubahan dalam pendekatan pengumpulan data oleh webroboto.io. Hal ini disampaikan oleh pihak `webroboto.io` pada situs web https://webrobots.io/kickstarter-datasets/ . Dataset yang dianalisis mulai dari 2009-2019 dengan jumlah data raw sebanyak 211.076 observasi.Setiap proyek kicstarter memiliki status *failed*, *successful*, *live*, *suspended* atau *canceled*. Dalam analisis ini, saya hanya tertarik pada proyek kicktarter yang memiliki status *successful* atau *failed*, sehingga saya memutuskan untuk membuang data observasi dengan status lainnya.<br/><br/>
+Tujuan dari projek ini adalah untuk menganalisa dan memvisualisasikan data kickstarter untuk mendapatkan informasi penting yang berkaitan. Dataset untuk proyek ini diambil dari repositori [webroboto.io](https://webrobots.io/). Mereka mengembangkan scrapper robot yang mengambil semua data proyek Kickstarter secara bulanan semenjak 2009. Ada kemungkinan data proyek tidak lengkap atau terjadi duplikasi dalam dataset karena perubahan dalam pendekatan pengumpulan data oleh webroboto.io. Hal ini disampaikan oleh pihak [webroboto.io](https://webrobots.io/) pada situs web https://webrobots.io/kickstarter-datasets/ . Dataset yang dianalisis merupakan data Project Campaign di Kickstarter mulai dari 2009-2019 dengan jumlah data raw sebanyak 211.076 observasi. Setiap proyek kicstarter memiliki status *failed*, *successful*, *live*, *suspended* atau *canceled*. Dalam analisis ini, saya hanya tertarik pada proyek kicktarter yang memiliki status *successful* atau *failed*, sehingga saya memutuskan untuk membuang data observasi dengan status lainnya.<br/><br/>
 
 
 # Data Preparation
 ## Export Raw Data
-Hasil download file .csv dari webroboto.io berupa zipfile, yang dimana setelah diekstrak akan mendapatkan **57 file .csv** dengan total ukuran penyimpanan sebesar **1,05 GB**. Seluruh data dari file .csv ini harus disatukan dahulu untuk mempermudah proses eksplorasi data. Setelah menyatukan data, saya cek kalau data kategori proyek disimpan didalam variabel `category` yang memiliki value berbentuk JSON values, sehingga perlu diekstrak dahulu untuk mengambil komponen variabel `parent_name` sebagai main_category dan `name` sebagai sub_category. Untuk melakukan tahapan proses tersebut, saya membuat fungsi **MergeKSFiles** dibawah ini. <br><br>
+Hasil download file .csv dari webroboto.io berupa zipfile, yang dimana setelah diekstrak akan mendapatkan **57 file .csv** dengan total ukuran penyimpanan sebesar **1,05 GB**. Seluruh data dari file .csv ini harus disatukan dahulu untuk mempermudah proses eksplorasi data. Setelah menyatukan data, saya cek kalau data kategori proyek disimpan didalam variabel `category` yang memiliki value berbentuk JSON values, sehingga perlu diekstrak dahulu untuk mengambil komponen variabel `parent_name` sebagai main_category dan `name` sebagai sub_category. Untuk melakukan tahapan proses tersebut, saya membuat fungsi **MergeKSFiles** dibawah ini. Pada RStudio, proses pembacaan data file dalam format .rds lebih cepat dibandingkan .csv dan ukuran penyimpanan datanya juga lebih kecil. Fungsi **MergeKSFiles** akan mengekspor hasil merge menjadi bentuk format file **.rds**. <br>
 
-Pada RStudio, proses pembacaan data file dalam format .rds lebih cepat dibandingkan .csv dan ukuran penyimpanan datanya juga lebih kecil. Fungsi **MergeKSFiles** akan mengekspor hasil merge menjadi bentuk format file **.rds**. ZipFile dari Raw data tidak saya sertakan dalam package projek ini karena terlalu besar, namun bisa didownload pada link berikut: https://s3.amazonaws.com/weruns/forfun/Kickstarter/Kickstarter_2020-02-13T03_20_04_893Z.zip
+
+**Raw Data (Data hasil download)**<br>
+Supaya project ini dapat dengan mudah diupload dan didownload pada github, maka raw data tidak saya upload ke github, namun bisa didownload dan diextract melalui link  https://s3.amazonaws.com/weruns/forfun/Kickstarter/Kickstarter_2020-02-13T03_20_04_893Z.zip . Hasil extract download akan berbentuk kumpulan data .csv seperti berikut:
+
+![](assets/file_extract.png)
 
 ```{r}
 # Fungsi ini hanya dapat digunakan untuk kumpulan data csv kickstarter yang di download dari webroboto.io.
-# Estimasi running time 8 menit untuk 60 csv files dengan total 200.000 baris data.
-# Hasil dari fungsi ini berbentuk file .rds
+# Estimasi running time 6-10 menit untuk 57 csv files dengan total 200.000 baris data.
+# Hasil dari fungsi ini berbentuk file .rds.
+# Silahkan dimodifikasi sesuai kebutuhan sebelum menggunakan.
 
 MergeKSFiles <- function(){
   # get dan set direktori
   wd <-  as.character(getwd())
-  setwd(paste(wd,"/data_extract",sep = ""))
+  setwd(paste(wd,"/data_download",sep = ""))
   
   # menyimpan seluruh file *csv menjadi list
   dir <- list.files(pattern = "*.csv")
   myfiles <- lapply(dir,read_csv)
   
-  # merge seluruh data dan menyimpan dalam variabel kick_raw
-  kick_raw <- myfiles %>% bind_rows(.id = "filename")
+  # merge seluruh data dan menyimpan dalam variabel ks_raw
+  ks_raw <- myfiles %>% bind_rows(.id = "filename")
   
   # ekstrak data main_category dan sub_category DARI JSON Value
   # jalankan library plyr sebelum menjalankan library dplyr
-  category_raw <- map(as.character(kick_raw$category),fromJSON)
+  category_raw <- map(as.character(ks_raw$category),fromJSON)
   category_raw <- plyr::ldply(category_raw, data.frame)
   category_raw <- category_raw[,c("parent_name","name")]
   colnames(category_raw) = c("main_category","sub_category")
-  kick_raw <- cbind(category_raw,kick_raw)
+  ks_raw <- cbind(category_raw,ks_raw)
+  
+  # Remove variabel yang tidak dibutuhkan
+  ks_raw <- ks_raw %>% 
+    select(-c(blurb,friends,is_backing,is_starrable,is_starred,location,permissions,photo,source_url,spotlight,urls,profile, creator,currency_trailing_code,disable_communication,id,slug,staff_pick,state_changed_at,usd_type,currency_symbol,currency,current_currency,category))
+  
+  # Seleksi data dibawah tahun 2020
+  ks_raw$launched_at =  as.Date(as.POSIXlt.POSIXct(ks_raw$launched_at))
+  ks_raw$deadline = as.Date(as.POSIXlt.POSIXct(ks_raw$deadline))
+  ks_raw <- ks_raw[year(ks_raw$launched_at) <2020,]
+  ks_raw <- ks_raw[year(ks_raw$deadline) <2020,]
   
   # Export RDS file dan simpan dengan nama kick_raw.rds
-  saveRDS(object=kick_raw, file=paste(paste(wd,"/data_raw/",sep = ""),"ks_raw.rds",sep=""))
+  saveRDS(object=ks_raw, file=paste(paste(wd,"/data_input/",sep = ""),"ks_input.rds",sep=""))
   
 }
 
 # jalankan fungsi ini untuk merge dan ekstrak data category
 # MergeKSFiles()
+
 ```
 
 
-## Read Raw Data
+## Read Data
 
-Setelah sukses mengekspor data raw menjadi .rds, total data yang didapat sebanyak 211,076 observasi dan 41 variabel dengan ukuran penyimpanan data sebesar **164 MB**. Ukuran penyimpanan datanya sangat signifikan berkurang sehingga dapat mempercepat performance pengelolaan data.
+Setelah sukses mengekspor data raw menjadi .rds menggnukan fungsi **MergeKSFiles()**, total data yang didapat sebanyak 205,510 observasi dan 17 variabel dengan ukuran penyimpanan data sebesar **10.5 MB**. Ukuran penyimpanan datanya sangat signifikan berkurang sehingga dapat mempercepat performance pengelolaan data.
 ```{r}
-ks_raw <- readRDS("data_raw/ks_raw.rds")
-glimpse(ks_raw)
+ks_input <- readRDS("data_input/ks_input.rds")
+glimpse(ks_input)
 ```
 
 
 # Data Pre-Processing
 ## Data Cleansing
 ### Validasi dan Seleksi Variabel
-Jika dilihat pada struktur data **ks_raw**, variabel yang ada cukup banyak namun tidak semua variabel tersebut akan gunakan. Selain itu  tipe data dari masing-masing variabel juga belum sesuai dengan kebutuhan, sehingga perlu perlu dilakukan Konversi data type dan menyeleksi variabel yang diunakan sesuai kebutuhan analisa kali ini saja. Oleh karena itu perlu dilakukan tahap berikut:
-  1. Validasi tipe data<br>
+Jika dilihat pada struktur data **ks_input**, variabel yang ada cukup banyak namun tidak semua variabel tersebut akan gunakan. Selain itu  tipe data dari masing-masing variabel juga belum sesuai dengan kebutuhan, sehingga perlu perlu dilakukan Konversi data type dan menyeleksi variabel yang diunakan sesuai kebutuhan analisa kali ini saja. Oleh karena itu perlu dilakukan tahap berikut:<br>
+  1. Validasi seluruh data type<br>
   2. Konversi format tanggal *created_at*, *deadline*, *launched_at*<br>
-  3. Mendapatkan data total hari project campaign: $total\ days = launched\ date - created\ at$ <br>
-  4. Mendapatkan data goal project dalam satuan USD: $usd\ goal = goal \ *\  static\ usd\ rate$ <br>
-  5. Mendapatkan tahun dimulainya project campaign: *year_created = as.factor(ordered(year(created_at)))* <br>
-  6. Seleksi data tahun mulai campaign < 2020 karena tahun 2020 masih berjalan. <br>
-  7. Seleksi variabel yang dibutuhkan: *project_name*, *main_category*, *sub_category*, *country_code*, *country_name*, *year_created*, *created_at*, *launched_at*, *deadline*, *total_days*, *usd_goal*, *backers_count*, *static_usd_rate*, *usd_pledged,state* <br>
+  3. Mendapatkan data total hari project campaign: **total days = launched date - created at** <br>
+  4. Mendapatkan data goal project dalam satuan USD: **usd goal = goal**  *  **static usd rate** <br>
+  6. Seleksi variabel yang dibutuhkan: *project_name*, *main_category*, *sub_category*, *country_code*, *country_name*, *year_created*, *created_at*, *launched_at*, *deadline*, *total_days*, *usd_goal*, *backers_count*, *static_usd_rate*, *usd_pledged,state* <br>
+  7. Seleksi data degan status **successful** dan **failed**<br>
   8. Mengkonversi data *project_name* menjadi lower case (untuk validasi data unik) <br>
-  9.Memyimpan hasil data kedalam variabel *ks_input*
   
 ```{r}
-ks_input <- ks_raw 
-
 # Konversi Data Type
 ks_input$main_category = as.factor(ks_input$main_category)
 ks_input$sub_category = as.factor(ks_input$sub_category)
@@ -170,8 +187,6 @@ ks_input$country_name = as.factor(ks_input$country_displayable_name)
 ks_input$fx_rate = as.numeric(ks_input$fx_rate)
 ks_input$goal = as.numeric(ks_input$goal)
 ks_input$created_at = as.Date(as.POSIXlt.POSIXct(ks_input$created_at))
-ks_input$launched_at =  as.Date(as.POSIXlt.POSIXct(ks_input$launched_at))
-ks_input$deadline = as.Date(as.POSIXlt.POSIXct(ks_input$deadline))
 ks_input$total_days = as.integer(ks_input$deadline-ks_input$launched_at)
 ks_input$project_name = as.character(ks_input$name)
 ks_input$project_name = stringr::str_to_lower(ks_input$project_name)
@@ -184,14 +199,10 @@ ks_input$main_category <- droplevels(ks_input$main_category)
 ks_input$sub_category <- droplevels(ks_input$sub_category)
 ks_input$country_code <- droplevels(ks_input$country_code)
 ks_input$country_name <- droplevels(ks_input$country_name)
-ks_input$state <- droplevels(ks_input$state)
-
-# seleksi project campaign dibawah tahun 2020
-ks_input <- ks_input[year(ks_input$launched_at) <2020,]
-ks_input <- ks_input[year(ks_input$deadline) <2020,]
 
 # seleksi project campaign dengan status successful atau failed
 ks_input <- ks_input[ks_input$state %in% c('successful','failed'),]
+ks_input$state <- droplevels(ks_input$state)
 
 # seleski hanya variabel yang digunakan saja
 ks_input <- ks_input[,c("project_name","main_category","sub_category","country_code","country_name","created_at","launched_at","deadline","total_days","usd_goal","backers_count","usd_pledged","state")]
@@ -253,12 +264,12 @@ ks_input <- unique(ks_input)
 data.frame(cbind("Total Data Seluruhnya"=dim(ks_input)[1], "Total Data Unik"=dim(unique(ks_input))[1]))
 ```
 
-Setelah data duplikat dibuang, total observasi yang dimiliki sebanyak **170,124**.
+Setelah data duplikat dibuang, total data observasi yang dimiliki sebanyak **170,124**.
 
 
 
 ## Data Inspection
-Setelah melakukan proses cleansing data, total observasi atas dataset Kickstarter Campaign yang dimiliki sebanyak **170,124** dan **14 variabel**. Namun, data yang tidak memiliki sub category sebanyak **6,950** atau **4,1%**.
+Setelah melakukan proses cleansing data, total observasi atas dataset Kickstarter Campaign yang dimiliki sebanyak **170,124** dan **13 variabel**. Namun, data yang tidak memiliki sub category sebanyak **6,950** atau **4,1%**.
 
 ### 100 Data Teratas
 ```{r}
@@ -336,10 +347,7 @@ tail(ks_input,100)
 <br>
 
 ### Export Data Clean
-Setelah data diolah sesuai kebutuhan analisis ini, maka clean data saya export dan diimport kembali dengan nama *ks_clean*. Ukuran data ks_clean setelah diexport turun sangat signifikan menjadi 6,8 MB. 
-
-**Notes**: Supaya project ini dapat diupload ke github maka data raw dan data download diawal tidak saya upload ke github karena maximal upload hanya 100 MB.
-
+Setelah data diolah sesuai kebutuhan analisis ini, maka clean data saya export dan diimport kembali dengan nama *ks_clean*. Ukuran data ks_clean setelah diexport turun sangat signifikan menjadi **6,6 MB**. 
 
 ```{r}
 #Export Data Clean
@@ -348,3 +356,460 @@ saveRDS(object=ks_input, file=paste(paste(wd,"/data_clean/",sep = ""),"ks_clean.
 ks_clean <- readRDS("data_clean/ks_clean.rds")
 ```
 
+
+
+# Data Analysis
+## Bagaimana pertumbuhan dan jumlah Project Campaign di Kickstarter setiap tahun?
+```{r}
+total.project <- data.frame(table(year(ks_clean$launched_at)))
+
+ggplot(total.project,aes(x=Var1, y=Freq, fill=Freq))+
+geom_bar(stat = "identity", position = "dodge",width = 0.9, show.legend = FALSE)+
+geom_text(aes(label=Freq, y=Freq+500), vjust = -0.5, size=3) +
+labs(
+  title = "Total Project Campaign per Tahun (2009-2019)",
+  x="Tahun",
+  y="Total Project Campaign"
+)+
+theme_minimal()+
+ theme(
+      axis.title=element_text(size=9, face="bold"),
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10))
+      ) +
+scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orange"))
+
+```
+
+
+Berdasarkan chart di atas, jumlah proyek di kickstarter selalu meningkat dari tahun 2009-2015, kemudian jumlah proyek menurun hingga tahun 2018 dan meningkat kembali ditahun 2019. Dari tahun 2009-2019, jumlah proyek di Kickstarter paling banyak pada tahun 2015 dengan jumlah 32,236 proyek. Lantas proyek kategori apa yang paling banyak? dan bagaimana pendanaannya?
+
+```{r, fig.width = 9}
+ks_2015 <- ks_clean[year(ks_clean$launched_at)=="2015",]
+project.popular.2015 <- data.frame(table(ks_2015$main_category))
+colnames(project.popular.2015) <- c("main_category","freq")
+project.popular.2015$main_category <- as.factor(project.popular.2015$main_category)
+project.popular.2015$main_category <- reorder(project.popular.2015$main_category,project.popular.2015$freq)
+
+ggplot(project.popular.2015,aes(x=main_category,y=freq,fill=freq))+
+geom_bar(stat = "identity", position = "dodge",width = 0.9, show.legend = FALSE)+
+geom_text(aes(label=freq, y=freq+400), size=3) +
+labs(
+  title="Most Project Campaign in 2015",
+  x = "Project Category",
+  y = "Total Project"
+)+
+coord_flip()+
+theme_minimal()+
+theme(
+      axis.title=element_text(size=9, face="bold"),
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10))
+      ) + 
+scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orange"))  -> p1
+
+
+# Most Pledged 2015
+most.pledged.2015 <- aggregate(usd_pledged~main_category,ks_2015,sum)
+most.pledged.2015$main_category <- reorder(most.pledged.2015$main_category,most.pledged.2015$usd_pledged)
+
+ggplot(most.pledged.2015, aes(x=main_category,y=usd_pledged/1000000,fill=usd_pledged))+
+geom_bar(stat = "identity",show.legend = FALSE)+
+geom_text(aes(label=paste0("$",round(usd_pledged/1000000,1)),y=round(usd_pledged/1000000,1)+10), size=3)+
+labs(
+  title ="Most Pledged Project in 2015",
+  x = NULL,
+  y = "Amount Pledged (USD millions)"
+)+
+coord_flip()+
+theme_minimal()+
+theme(
+      axis.title=element_text(size=9,face="bold"), 
+      axis.text.x=element_text(size=9,margin = margin(b=10))
+) + 
+scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orange"))->p2
+
+
+
+grid.arrange(p1, p2, ncol = 2)
+
+```
+
+Pada tahun 2015, Jumlah Proyek **Film & Video** paling banyak didaftarkan untuk mengikuti project campaign di Kictstarter, namun total pendanaan proyek **Technology** paling besar. Proyek Technology mendapatkan total pendanaan USD 121 Juta sedangkan proyek Film & Video mendapatkan USD 51 juta. 
+
+
+
+***
+
+<br>
+
+## Bagaimana pertumbuhan pendanaan dari 2009-2020?
+```{r}
+total.pledged <- aggregate(ks_clean$usd_pledged~year(ks_clean$launched_at),data=ks_clean, sum)
+colnames(total.pledged) <- c("year","total_pledged")
+
+ggplot(total.pledged, aes(x=as.factor(year), y=total_pledged/1000000, fill=total_pledged))+
+geom_bar(stat = "identity", position = "dodge",width = 0.9, show.legend = FALSE)+
+ geom_text(aes(label=paste0("$",round(total_pledged/1000000,1)),y=round(total_pledged/1000000,1)+10), vjust=-0.5, size=3.5)+
+labs(
+  title = "Pertumbuhan Pendanaan Project Campaign (2009-2019)",
+  x="Tahun",
+  y="Total Pendanaan (USD Millions)"
+)+
+theme_minimal()+
+theme(
+      axis.title=element_text(size=9, face="bold"),
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10))
+  ) + 
+scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orange"))
+
+```
+
+
+Total pendanaan di kicstarter selalu meningkat dari tahun 2009-2015, kemudian total pendanaan menurun hingga tahun 2018 dan meningkat kembali ditahun 2019. Jika dilihat dari polanya, peningkatan dan penurunan total pendanaan proyek di kicktarter sesuai dengan pola peningkatan dan penurunan jumlah proyek di kickstarter pada poin 4.1. Namun, yang aneh jumlah proyek di kickstarter paling banyak pada tahun 2015, tapi mengapa total pendanaan paling banyak terjadi pada tahun 2019? 
+
+
+
+
+```{r, fig.asp=0.4,  fig.width = 9}
+
+ks_pledged <- ks_clean[year(ks_clean$launched_at) %in% c("2019","2015"),]
+ks_pledged <- ks_pledged[ks_pledged$usd_pledged>0,]
+
+
+ggplot(ks_pledged, aes(as.factor(year(launched_at)), log(usd_pledged), fill=as.factor(year(launched_at)))) + 
+  geom_boxplot(show.legend = FALSE) +
+  labs(
+    title ="Log(Pledged Amount): 2015 vs 2019",
+    y = "Log(Pledged Amount)",
+    x = "Year"
+  )+
+  theme_minimal()+
+  theme(
+      axis.title=element_text(size=8,face="bold"), 
+      axis.text.x=element_text(size=10,margin = margin(b=10)),
+      axis.text.y=element_text(size=10),
+      axis.text.y.left = element_text(margin = margin(l=10))
+      )+
+  mycolor_fill()+
+  coord_flip()->ks_pledged2
+
+ks_pledged_color <- get_scale_color(get_pal(mycolorfill))
+ggplot(ks_pledged, aes(backers_count,usd_pledged), group=as.factor(year(launched_at))) +
+  geom_point(aes(color=as.factor(year(launched_at)),size=usd_pledged), alpha=0.6, show.legend = FALSE)+
+  scale_y_continuous(name = "Amount Pledged (USD millions)",
+                     labels = dollar
+                          ) +
+  labs(
+    title ="Pledged Amount: 2015 vs 2019",
+    y = "Amount Pledged",
+    x = "Total Backer",
+    color="Year",
+    size=NULL
+  )+
+  guides(size = FALSE)+
+ theme_minimal()+
+  theme(
+      axis.title=element_text(size=8,face="bold"), 
+      axis.text.x=element_text(size=10,margin = margin(b=10)),
+      axis.text.y=element_text(size=10),
+      axis.text.y.left = element_text(margin = margin(l=10)),
+      legend.position = NULL
+      )+
+  ks_pledged_color()->ks_pledged1
+
+
+
+grid.arrange(ks_pledged2,ks_pledged1, ncol = 2)
+
+```
+
+
+
+
+
+***
+
+<br>
+
+
+## Apa kategori project yang paling popular?
+```{r}
+project.popular <- data.frame(table(ks_clean$main_category))
+colnames(project.popular) <- c("main_category","freq")
+project.popular$main_category <- as.factor(project.popular$main_category)
+project.popular$main_category <- reorder(project.popular$main_category,project.popular$freq)
+
+ggplot(project.popular,aes(x=main_category,y=freq,fill=freq))+
+geom_bar(stat = "identity", position = "dodge",width = 0.9, show.legend = FALSE)+
+geom_text(aes(label=freq, y=freq+1000), size=3) +
+labs(
+  title="Tingkat Popularitas Project Campaign (2009-2019)",
+  x = "Kategori",
+  y = "Total Project"
+)+
+coord_flip()+
+theme_minimal()+
+theme(
+      axis.title=element_text(size=9, face="bold"),
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10))
+      ) + 
+scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orange"))
+
+
+```
+
+
+
+***
+
+<br>
+
+## Bagaimana pertumbuhan jumlah project campaign setiap kategori dari 2009 - 2019? {.tabset}
+
+### All
+```{r}
+category.growth <- data.frame(table(ks_clean$main_category,year(ks_clean$launched_at)))
+colnames(category.growth) <- c("main_category","year","freq")
+
+ggplot(category.growth, aes(year, freq,group = main_category)) +
+geom_line(aes(color=main_category),size=0.65)+
+geom_point(aes(color=main_category))+
+labs(
+  title ="Growth of Project Campaign by Category (2009-2019)",
+  x = "Year",
+  y = "total",
+  color = "Project Category"
+)+
+ theme_minimal()+
+theme( 
+      axis.title=element_text(size=9, face="bold"),
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10))
+      ) +
+mycolor_color()
+
+```
+
+
+### Detail
+
+```{r, eval=T, fig.asp=1.0, fig.width = 8}
+
+ggplot(category.growth, aes(year, freq,group = main_category)) +
+  geom_line(aes(color=main_category),size=0.65, show.legend = FALSE)+
+  geom_point(aes(color=main_category), show.legend = FALSE)+
+  labs(
+    title ="Growth of Project Campaign by Category (2009-2019)",
+    x = "Year",
+    y = "total",
+    color = "Project Category"
+  )+
+  facet_wrap(~main_category, scales = "free_y", ncol = 3)+
+  theme_minimal()+
+  theme( 
+        axis.title=element_text(size=9, face="bold"),
+        axis.text.x=element_text(size=9,margin = margin(b=10), angle=90),
+        axis.text.y.left = element_text(margin = margin(l=10))
+        ) +
+  mycolor_color()
+
+```
+
+
+***
+
+<br>
+
+## Apa Kategori Projek yang paling banyak mendapatkan pendanaan?
+
+```{r}
+most.pledged <- aggregate(usd_pledged~main_category,ks_clean,sum)
+most.pledged$main_category <- reorder(most.pledged$main_category,most.pledged$usd_pledged)
+
+ggplot(most.pledged, aes(x=main_category,y=usd_pledged/1000000,fill=usd_pledged))+
+geom_bar(stat = "identity",show.legend = FALSE)+
+geom_text(aes(label=paste0("$",round(usd_pledged/1000000,1)),y=round(usd_pledged/1000000,1)+30), size=3)+
+labs(
+  title ="Most Pledged project by Category (2009-2019)",
+  x = "Project Category",
+  y = "Amount Pledged (USD millions)"
+)+
+coord_flip()+
+theme_minimal()+
+theme(
+      axis.title=element_text(size=9,face="bold"), 
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10))
+) + 
+scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orange"))
+
+```
+
+
+
+***
+
+<br>
+
+## Bagaimana pertumbuhan pendanaan project campaign setiap kategori dari 2009 - 2019? {.tabset}
+
+
+### All
+```{r}
+pledged.growth <- aggregate(usd_pledged~main_category+year(launched_at),ks_clean,sum)
+colnames(pledged.growth) <- c("main_category","year","usd_pledged")
+pledged.growth$year <- as.factor(pledged.growth$year)
+pledged.growth$main_category <- reorder(pledged.growth$main_category,pledged.growth$usd_pledged)
+
+ggplot(pledged.growth, aes(year, usd_pledged/1000000, group = main_category)) +
+geom_line(aes(color=main_category),size=0.65)+
+geom_point(aes(color=main_category))+
+scale_y_continuous(labels=dollar_format(prefix="$")) +
+labs(
+  title ="Growth of Pledged Amount by Project Category (2009-2019)",
+  x = "Year",
+  y = "Amount Pledged (USD Millions)",
+  color = "Project Category"
+)+
+ theme_minimal()+
+theme(
+      axis.title=element_text(size=9,face="bold"), 
+      axis.text.x=element_text(size=9,margin = margin(b=10), angle = 90),
+      axis.text.y.left = element_text(margin = margin(l=10)),
+      panel.spacing = unit(1, "lines")
+      ) +
+mycolor_color()
+
+```
+
+### Detail
+```{r, eval=T, fig.asp=1.0, fig.width = 8}
+ggplot(pledged.growth, aes(year, usd_pledged/1000000, group = main_category)) +
+geom_line(aes(color=main_category),size=0.65, show.legend = FALSE)+
+geom_point(aes(color=main_category),show.legend = FALSE)+
+scale_y_continuous(labels=dollar_format(prefix="$")) +
+labs(
+  title ="Growth of Pledged Amount by Project Category (2009-2019)",
+  x = "Year",
+  y = "Amount Pledged (USD Millions)",
+  color = "Project Category"
+)+
+facet_wrap(~main_category, scales = "free_y", ncol = 3)+
+ theme_minimal()+
+theme(
+      axis.title=element_text(size=9,face="bold"), 
+      axis.text.x=element_text(size=9,margin = margin(b=10), angle = 90),
+      axis.text.y.left = element_text(margin = margin(l=10)),
+      panel.spacing = unit(1, "lines")
+      ) +
+mycolor_color()
+
+```
+
+
+***
+
+## Total days of Campaign
+```{r}
+
+ggplot(ks_clean, aes(main_category, total_days, fill=main_category)) + 
+  geom_boxplot(show.legend = FALSE) + 
+  scale_y_continuous(name = "Campaign Length (Days)",
+                           breaks = seq(0, 60, 5),
+                           limits=c(0, 60)) +
+  labs(
+    title ="Total days of Campaign by Project Category (2009-2019)",
+    x = "Project Category",
+    y = "Campaign Length",
+    color = "Project Category"
+  )+
+  theme_minimal()+
+  theme(
+      axis.title=element_text(size=9,face="bold"), 
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10))
+      )+
+  mycolor_fill()+
+  coord_flip()
+
+```
+
+
+
+
+***
+
+<br>
+
+
+
+## Bagaimana tingkat kesuksesan Project Campaign di Kickstarter?
+
+```{r}
+state.ratio <- table(year(ks_clean$launched_at), ks_clean$state)
+state.ratio <- cbind(state.ratio,aggregate(Freq~Var1,state.ratio,sum)[2])
+colnames(state.ratio) <- c("year","state","freq","total_freq")
+state.ratio$pct <- state.ratio$freq/state.ratio$total_freq
+
+ggplot(state.ratio, aes(x=year,y=pct,fill=state), group=state)+
+geom_bar(stat="identity") +
+labs(
+  title = "Rasio Kesuksesan Project Campaign per Tahun (2009-2019)",
+  x= "Tahun",
+  y= "Total Project"
+)+
+scale_y_continuous(labels=scales::percent) + 
+geom_text(aes(label=paste0(round(pct*100,1),"%")),
+          position=position_stack(vjust=0.5), 
+          colour="white", size=3)+
+coord_flip()+
+theme_minimal()+
+theme(
+      axis.title=element_text(size=9,face="bold"), 
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10)),
+      legend.position = "bottom"
+    ) + 
+mycolor_fill()
+
+
+```
+
+
+
+
+***
+
+<br>
+
+
+```{r}
+usd.amounts <- gather(data=ks_clean, key=type, value=amount, usd_pledged, usd_goal, factor_key=T)
+
+ggplot(usd.amounts, aes(log(amount+1), fill=type)) + 
+  geom_histogram(alpha=0.5, position="identity",binwidth = 1) + 
+  ggtitle("Distribution of log(Pledged Amount) vs. log(Goal Amount)") +
+  xlab("log(USD Pledged Amount)") + 
+  ylab("Frequency") + 
+  theme_minimal()+
+  theme(
+        axis.title=element_text(size=9,face="bold"), 
+        axis.text.x=element_text(size=9,margin = margin(b=10)),
+        axis.text.y.left = element_text(margin = margin(l=10)),
+        legend.position = "bottom"
+      ) + 
+  mycolor_fill()
+
+
+```
+
+
+# Summary
+
+
+<br>
+
+# Reference
