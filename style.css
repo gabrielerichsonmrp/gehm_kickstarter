@@ -1,3 +1,21 @@
+div.main-container {
+    max-width: 1280px;
+}
+
+.main-container {
+    max-width: 1280px;
+}
+
+div.tocify {
+    width: 20%;
+    max-width: 280px;
+    max-height: 85%;
+}
+
+.tocify {
+    border: 1px solid #50719447;
+}
+
 body {
     text-align: justify
   
@@ -46,14 +64,14 @@ p {
 
 .nav-pills>li.active>a, .nav-pills>li.active>a:hover, .nav-pills>li.active>a:focus {
   color: #ffffff;
-  background-color: #325d888a;
+  background-color: #006b21c4;
 }
 
 .nav>li>a:hover, .nav>li>a:focus {
 
   text-decoration: none;
-  background-color: #f47c3ca6;
-  color: white;
+  background-color: #bbc1c78a;
+  color: #6f6f6f;
 }
 
 .tocify {
@@ -109,6 +127,7 @@ code > span.kw {
 	color:#54b4eb;
 }
 
+
 p > code {
     background-color: #ecf0f1!important;
     padding: 1%;
@@ -135,7 +154,7 @@ code > span.ot {
 }
 
 code > span.st {
-    color: #2f4b7c;
+    color: #37982c;
 }
 
 code > span.dt {

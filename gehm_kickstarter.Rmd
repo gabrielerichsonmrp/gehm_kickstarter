@@ -1,5 +1,5 @@
 ---
-title: "Kickstarter Campaign"
+title: "Kickstarter Project Campaign 2009-2019"
 subtitle: "Data Analysis and Visualization"
 author: "by Gabriel Erichson"
 output: 
@@ -821,7 +821,7 @@ Tahun 2015 merupakan tahun yang unik di Kickstarter. Jumlah proyek paling tinggi
 <br>
 
 
-## Apa faktor yang paling mempengaruhi jumlah pendanaan di Kicstarter?
+## Apa faktor yang paling mempengaruhi jumlah pendanaan proyek di Kickstarter?
 
 
 ```{r, fig.align='center', fig.asp=0.5, warning=F, error=F}
