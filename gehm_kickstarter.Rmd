@@ -897,11 +897,11 @@ Berdasarkan perbandingan antara grafik diatas, pola naik turun dari jumlah pembe
 
 # Summary
 
-Dari tahun 2009-2019, pola dari jumlah proyek dan jumlah pendanaan yang mengikuti Project Campaign di Kickstarter relatif naik-turun. Tahun 2015 merupakan tahun dimana jumlah proyek di kickstarter paling banyak sekaligus tahun dimana tingkat kesuksesan proyek terendah. Sebuah proyek dikatakan sukses apabila jumlah dana yang didapatkan mencapai atau lebih dari goal yang ditentukan. Sesuai analisa diatas, jumlah dana yang didapatkan dari sebuah proyek sangat tergantung dari jumlah kontributor yang memberikan dana. Sehingga saran yang dapat diberikan jika hendak mengikuti project campaign di Kickstarter yaitu:
-  1. Terus update terkait proyek apa yang sedang tren dan relevan.
-  2. Membuat target goal yang realistis.
-  3. Melakukan pemasaran melalui media-media yang bisa menjangkau banyak calon kontributor.
-  4. Bangun komunikasi dan berikan feedback ke calon kontributor maupun platform Kickstarter.
+Dari tahun 2009-2019, pola dari jumlah proyek dan jumlah pendanaan yang mengikuti Project Campaign di Kickstarter relatif naik-turun. Tahun 2015 merupakan tahun dimana jumlah proyek di kickstarter paling banyak sekaligus tahun dimana tingkat kesuksesan proyek terendah. Sebuah proyek dikatakan sukses apabila jumlah dana yang didapatkan mencapai atau lebih dari goal yang ditentukan. Sesuai analisa diatas, jumlah dana yang didapatkan dari sebuah proyek sangat tergantung dari jumlah kontributor yang memberikan dana. Sehingga saran yang dapat diberikan jika hendak mengikuti project campaign di Kickstarter yaitu:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. Terus update terkait proyek apa yang sedang tren dan relevan.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. Membuat target goal yang realistis.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3. Melakukan pemasaran melalui media-media yang bisa menjangkau banyak calon kontributor.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4. Bangun komunikasi dan berikan feedback ke calon kontributor maupun platform Kickstarter.
 
 
 
