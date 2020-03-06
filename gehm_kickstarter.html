@@ -3363,8 +3363,8 @@ Status campaign. Status dikatakan sukses apabila total pendapatan pendanaan lebi
 <hr />
 <p><br></p>
 </div>
-<div id="bagaimana-pertumbuhan-pendanaan-dari-tahun-2009-2020" class="section level2">
-<h2><span class="header-section-number">4.2</span> Bagaimana pertumbuhan pendanaan dari tahun 2009-2020?</h2>
+<div id="bagaimana-pertumbuhan-pendanaan-dari-tahun-2009-2019" class="section level2">
+<h2><span class="header-section-number">4.2</span> Bagaimana pertumbuhan pendanaan dari tahun 2009-2019?</h2>
 <div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">total.pledged &lt;-<span class="st"> </span><span class="kw">aggregate</span>(ks_clean<span class="op">$</span>usd_pledged<span class="op">~</span><span class="kw">year</span>(ks_clean<span class="op">$</span>launched_at),<span class="dt">data=</span>ks_clean, sum)</a>
 <a class="sourceLine" id="cb22-2" title="2"><span class="kw">colnames</span>(total.pledged) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;year&quot;</span>,<span class="st">&quot;total_pledged&quot;</span>)</a>
 <a class="sourceLine" id="cb22-3" title="3"></a>

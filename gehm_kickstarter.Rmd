@@ -446,7 +446,7 @@ Pada tahun 2015, Jumlah Proyek Film & Video paling banyak didaftarkan untuk meng
 
 <br>
 
-## Bagaimana pertumbuhan pendanaan dari tahun 2009-2020?
+## Bagaimana pertumbuhan pendanaan dari tahun 2009-2019?
 ```{r}
 total.pledged <- aggregate(ks_clean$usd_pledged~year(ks_clean$launched_at),data=ks_clean, sum)
 colnames(total.pledged) <- c("year","total_pledged")
