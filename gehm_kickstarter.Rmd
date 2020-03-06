@@ -39,6 +39,7 @@ library(paletti)
 library(jsonlite)
 library(gridExtra)
 library(grid)
+library(GGally)
 
 
 # WARNA
@@ -96,18 +97,12 @@ Kickstarter adalah sebuah online platform yang memberikan ruang pendanaan untuk 
 
 ## Preliminary Analysis
 
-Tujuan dari projek ini adalah untuk menganalisa dan memvisualisasikan data kickstarter untuk mendapatkan informasi penting yang berkaitan. Dataset untuk proyek ini diambil dari repositori [webroboto.io](https://webrobots.io/). Mereka mengembangkan scrapper robot yang mengambil semua data proyek Kickstarter secara bulanan semenjak 2009. Ada kemungkinan data proyek tidak lengkap atau terjadi duplikasi dalam dataset karena perubahan dalam pendekatan pengumpulan data oleh webroboto.io. Hal ini disampaikan oleh pihak [webroboto.io](https://webrobots.io/) pada situs web https://webrobots.io/kickstarter-datasets/ . Dataset yang dianalisis merupakan data Project Campaign di Kickstarter mulai dari 2009-2019 dengan jumlah data raw sebanyak 211.076 observasi. Setiap proyek kicstarter memiliki status *failed*, *successful*, *live*, *suspended* atau *canceled*. Dalam analisis ini, saya hanya tertarik pada proyek kicktarter yang memiliki status *successful* atau *failed*, sehingga saya memutuskan untuk membuang data observasi dengan status lainnya.<br/><br/>
+Tujuan dari proyek ini adalah untuk menganalisa dan memvisualisasikan data kickstarter untuk mendapatkan informasi penting yang berkaitan. Dataset untuk proyek ini diambil dari repositori [webroboto.io](https://webrobots.io/). Mereka mengembangkan scrapper robot yang mengambil semua data proyek Kickstarter secara bulanan semenjak 2009. Ada kemungkinan data proyek tidak lengkap atau terjadi duplikasi dalam dataset karena perubahan dalam pendekatan pengumpulan data oleh webroboto.io. Hal ini disampaikan oleh pihak [webroboto.io](https://webrobots.io/) pada situs web https://webrobots.io/kickstarter-datasets/ . Dataset yang dianalisis merupakan data Project Campaign di Kickstarter mulai dari 2009-2019 dengan jumlah data raw sebanyak 211.076 observasi. Setiap proyek kicstarter memiliki status *failed*, *successful*, *live*, *suspended* atau *canceled*. Dalam analisis ini, saya hanya tertarik pada proyek kicktarter yang memiliki status *successful* atau *failed*, sehingga saya memutuskan untuk membuang data observasi dengan status lainnya.<br/><br/>
 
 
 # Data Preparation
 ## Export Raw Data
 Hasil download file .csv dari webroboto.io berupa zipfile, yang dimana setelah diekstrak akan mendapatkan **57 file .csv** dengan total ukuran penyimpanan sebesar **1,05 GB**. Seluruh data dari file .csv ini harus disatukan dahulu untuk mempermudah proses eksplorasi data. Setelah menyatukan data, saya cek kalau data kategori proyek disimpan didalam variabel `category` yang memiliki value berbentuk JSON values, sehingga perlu diekstrak dahulu untuk mengambil komponen variabel `parent_name` sebagai main_category dan `name` sebagai sub_category. Untuk melakukan tahapan proses tersebut, saya membuat fungsi **MergeKSFiles** dibawah ini. Pada RStudio, proses pembacaan data file dalam format .rds lebih cepat dibandingkan .csv dan ukuran penyimpanan datanya juga lebih kecil. Fungsi **MergeKSFiles** akan mengekspor hasil merge menjadi bentuk format file **.rds**. <br>
-
-
-**Raw Data (Data hasil download)**<br>
-Supaya project ini dapat dengan mudah diupload dan didownload pada github, maka raw data tidak saya upload ke github, namun bisa didownload dan diextract melalui link  https://s3.amazonaws.com/weruns/forfun/Kickstarter/Kickstarter_2020-02-13T03_20_04_893Z.zip . Hasil extract download akan berbentuk kumpulan data .csv seperti berikut:
-
-![](assets/file_extract.png)
 
 ```{r}
 # Fungsi ini hanya dapat digunakan untuk kumpulan data csv kickstarter yang di download dari webroboto.io.
@@ -154,6 +149,14 @@ MergeKSFiles <- function(){
 # MergeKSFiles()
 
 ```
+
+
+
+**Raw Data (Data hasil download)**<br>
+Supaya project ini dapat dengan mudah diupload dan didownload pada github, maka raw data tidak saya upload ke github, namun bisa didownload dan diextract melalui link  https://s3.amazonaws.com/weruns/forfun/Kickstarter/Kickstarter_2020-02-13T03_20_04_893Z.zip . Hasil extract download akan berbentuk kumpulan data .csv seperti berikut:
+
+![](assets/file_extract.png)
+
 
 
 ## Read Data
@@ -359,7 +362,7 @@ ks_clean <- readRDS("data_clean/ks_clean.rds")
 
 
 # Data Analysis
-## Bagaimana pertumbuhan dan jumlah Project Campaign di Kickstarter setiap tahun?
+## Bagaimana pertumbuhan Project Campaign dari 2009-2019?
 ```{r}
 total.project <- data.frame(table(year(ks_clean$launched_at)))
 
@@ -367,9 +370,9 @@ ggplot(total.project,aes(x=Var1, y=Freq, fill=Freq))+
 geom_bar(stat = "identity", position = "dodge",width = 0.9, show.legend = FALSE)+
 geom_text(aes(label=Freq, y=Freq+500), vjust = -0.5, size=3) +
 labs(
-  title = "Total Project Campaign per Tahun (2009-2019)",
-  x="Tahun",
-  y="Total Project Campaign"
+  title = "Total of Project Campaign (2009-2019)",
+  x="Year",
+  y="Total of Project Campaign"
 )+
 theme_minimal()+
  theme(
@@ -435,7 +438,7 @@ grid.arrange(p1, p2, ncol = 2)
 
 ```
 
-Pada tahun 2015, Jumlah Proyek **Film & Video** paling banyak didaftarkan untuk mengikuti project campaign di Kictstarter, namun total pendanaan proyek **Technology** paling besar. Proyek Technology mendapatkan total pendanaan USD 121 Juta sedangkan proyek Film & Video mendapatkan USD 51 juta. 
+Pada tahun 2015, Jumlah Proyek Film & Video paling banyak didaftarkan untuk mengikuti project campaign di Kickstarter, namun total pendanaan proyek Technology paling besar. Proyek Technology mendapatkan total pendanaan USD 121 Juta sedangkan proyek Film & Video mendapatkan USD 51 juta. 
 
 
 
@@ -443,7 +446,7 @@ Pada tahun 2015, Jumlah Proyek **Film & Video** paling banyak didaftarkan untuk 
 
 <br>
 
-## Bagaimana pertumbuhan pendanaan dari 2009-2020?
+## Bagaimana pertumbuhan pendanaan dari tahun 2009-2020?
 ```{r}
 total.pledged <- aggregate(ks_clean$usd_pledged~year(ks_clean$launched_at),data=ks_clean, sum)
 colnames(total.pledged) <- c("year","total_pledged")
@@ -452,9 +455,9 @@ ggplot(total.pledged, aes(x=as.factor(year), y=total_pledged/1000000, fill=total
 geom_bar(stat = "identity", position = "dodge",width = 0.9, show.legend = FALSE)+
  geom_text(aes(label=paste0("$",round(total_pledged/1000000,1)),y=round(total_pledged/1000000,1)+10), vjust=-0.5, size=3.5)+
 labs(
-  title = "Pertumbuhan Pendanaan Project Campaign (2009-2019)",
-  x="Tahun",
-  y="Total Pendanaan (USD Millions)"
+  title = "Total Pledged Amount (2009-2019)",
+  x="Year",
+  y="Total Pledged Amount (USD Millions)"
 )+
 theme_minimal()+
 theme(
@@ -467,9 +470,7 @@ scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orang
 ```
 
 
-Total pendanaan di kicstarter selalu meningkat dari tahun 2009-2015, kemudian total pendanaan menurun hingga tahun 2018 dan meningkat kembali ditahun 2019. Jika dilihat dari polanya, peningkatan dan penurunan total pendanaan proyek di kicktarter sesuai dengan pola peningkatan dan penurunan jumlah proyek di kickstarter pada poin 4.1. Namun, yang aneh jumlah proyek di kickstarter paling banyak pada tahun 2015, tapi mengapa total pendanaan paling banyak terjadi pada tahun 2019? 
-
-
+Total pendanaan di kickstarter selalu meningkat dari tahun 2009-2015, kemudian total pendanaan menurun hingga tahun 2018 dan meningkat kembali ditahun 2019. Jika dilihat dari polanya, peningkatan dan penurunan total pendanaan proyek di kicktarter sesuai dengan pola peningkatan dan penurunan jumlah proyek di kickstarter pada poin 4.1. Namun, yang aneh jumlah proyek di kickstarter paling banyak pada tahun 2015, tapi mengapa total pendanaan paling banyak terjadi pada tahun 2019? 
 
 
 ```{r, fig.asp=0.4,  fig.width = 9}
@@ -480,8 +481,9 @@ ks_pledged <- ks_pledged[ks_pledged$usd_pledged>0,]
 
 ggplot(ks_pledged, aes(as.factor(year(launched_at)), log(usd_pledged), fill=as.factor(year(launched_at)))) + 
   geom_boxplot(show.legend = FALSE) +
+  
   labs(
-    title ="Log(Pledged Amount): 2015 vs 2019",
+    title ="Log of Pledged Amount: 2015 vs 2019",
     y = "Log(Pledged Amount)",
     x = "Year"
   )+
@@ -525,7 +527,7 @@ grid.arrange(ks_pledged2,ks_pledged1, ncol = 2)
 
 ```
 
-
+Dapat dilihat pada boxplot bahwa rata-rata pendanaan di tahun 2019 lebih besar dari tahun 2015 dan nilai Q3 tahun 2019 lebih besar dari Q3 tahun 2015. Secara distribusi penyebarannya, terdapat beberapa proyek di tahun 2019 yang mendapatkan pendanaan jauh lebih tinggi dari pada pendanaan di tahun 2015. Hal ini menjelaskan mengapa total pendanaan di tahun 2019 lebih tinggi daripada tahun 2015.
 
 
 
@@ -534,7 +536,7 @@ grid.arrange(ks_pledged2,ks_pledged1, ncol = 2)
 <br>
 
 
-## Apa kategori project yang paling popular?
+## Apa kategori proyek yang paling popular dari 2009-2019?
 ```{r}
 project.popular <- data.frame(table(ks_clean$main_category))
 colnames(project.popular) <- c("main_category","freq")
@@ -545,8 +547,8 @@ ggplot(project.popular,aes(x=main_category,y=freq,fill=freq))+
 geom_bar(stat = "identity", position = "dodge",width = 0.9, show.legend = FALSE)+
 geom_text(aes(label=freq, y=freq+1000), size=3) +
 labs(
-  title="Tingkat Popularitas Project Campaign (2009-2019)",
-  x = "Kategori",
+  title="Most Popular Project by Category (2009-2019)",
+  x = "Project Category",
   y = "Total Project"
 )+
 coord_flip()+
@@ -561,13 +563,13 @@ scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orang
 
 ```
 
-
+Seperti yang kita ketahui, pertumbuhan teknologi dari tahun 2009-2019 sangat pesat dan terasa diberbagai kalangan masyarakat. Namun, berdasarkan data kickstarter yaitu proyek yang paling banyak dari tahun 2009-2019 adalah Proyek Music dengan jumlah 25100 proyek, sedangkan proyek teknologi berada pada urutan ke 4(empat) dengan jumlah 18099 proyek. Berdasarkan data ini, saya berasumsi bahwa cukup banyak proyek teknologi yang tidak mencari pendanaan melalui kickstarter. 
 
 ***
 
 <br>
 
-## Bagaimana pertumbuhan jumlah project campaign setiap kategori dari 2009 - 2019? {.tabset}
+## Bagaimana pertumbuhan jumlah project campaign setiap kategori dari 2009 - 2019? {.tabset .tabset-fade .tabset-pills}
 
 ### All
 ```{r}
@@ -592,6 +594,8 @@ theme(
 mycolor_color()
 
 ```
+
+Jumlah sebagian besar proyek selalu meningkat dari tahun 2009-2015 dan memiliki puncak pertumbuhan pada tahun 2015. Namun berebeda dengan proyek Dance yang mengalami penurunan pertumbuhan pada 2015 bahkan hingga 2019. Hal ini mendukung analisa pada poin 4.1 yang dimana jumlah proyek pada tahun 2015 paling tinggi. Proyek Film & Video merajai tahun 2015 namun jumlahnya terus menurun hingga 2019 dan pada tahun 2019 dirajai oleh Proyek Games yang meningkat secara signifikan dari tahun 2018.
 
 
 ### Detail
@@ -619,11 +623,14 @@ ggplot(category.growth, aes(year, freq,group = main_category)) +
 ```
 
 
+Berdasarkan detail dari chart pertumbuhan jumlah proyek di kickstarter, meskipun jumlah proyek Comics bukan yang paling tinggi, tapi hanya jumlah proyek Comics yang terus mengalami peningkatan dari tahun 2009-2019. Kemudian  peningkatan jumlah proyek tertinggi di tahun 2019 dipegang oleh proyek Games dan Design.  
+
+
 ***
 
 <br>
 
-## Apa Kategori Projek yang paling banyak mendapatkan pendanaan?
+## Apa kategori proyek yang paling banyak mendapatkan pendanaan dari 2009-2019?
 
 ```{r}
 most.pledged <- aggregate(usd_pledged~main_category,ks_clean,sum)
@@ -633,7 +640,7 @@ ggplot(most.pledged, aes(x=main_category,y=usd_pledged/1000000,fill=usd_pledged)
 geom_bar(stat = "identity",show.legend = FALSE)+
 geom_text(aes(label=paste0("$",round(usd_pledged/1000000,1)),y=round(usd_pledged/1000000,1)+30), size=3)+
 labs(
-  title ="Most Pledged project by Category (2009-2019)",
+  title ="Most Pledged Project by Category (2009-2019)",
   x = "Project Category",
   y = "Amount Pledged (USD millions)"
 )+
@@ -648,13 +655,14 @@ scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orang
 
 ```
 
+Berdasarkan data total pendanaan dari tahun 2009-2019, Proyek Teknologi mendapatkan total pendanaan paling tinggi dan proyek Dance mendapatkan total pendanaan paling rendah. Jika dilihat, selisih total pendanaan proyek teknologi sangat jauh dari proyek di kategori lainnya. Hal ini menandakan bahwa perkembangan proyek teknologi sangat didukung oleh pemberi dana yang ada di kickstarter.
 
 
 ***
 
 <br>
 
-## Bagaimana pertumbuhan pendanaan project campaign setiap kategori dari 2009 - 2019? {.tabset}
+## Bagaimana pertumbuhan pendanaan setiap kategori proyek dari 2009-2019? {.tabset .tabset-fade .tabset-pills}
 
 
 ### All
@@ -685,6 +693,10 @@ mycolor_color()
 
 ```
 
+Sesuai analisa pada poin 4.4, peningkatan jumlah proyek tertinggi ditahun 2019 dipegang oleh proyek Games dan Design. Hal tersebut linier dengan peningkatan jumlah pendanaan seperti yang terlihat pada chart di atas. 
+Peningkatan jumlah pendanaan paling tinggi ditahun 2019 juga dipegang oleh proyek Games dan Design yang dimana total pendanaanya meningkat 500% dari tahun 2018. Bahkan, total pendanaan paling tinggi ditahun 2019 dipegang oleh proyek Games dan design, kemudian pada peringkat ke-3 disusul oleh proyek teknologi.
+
+
 ### Detail
 ```{r, eval=T, fig.asp=1.0, fig.width = 8}
 ggplot(pledged.growth, aes(year, usd_pledged/1000000, group = main_category)) +
@@ -709,34 +721,7 @@ mycolor_color()
 
 ```
 
-
-***
-
-## Total days of Campaign
-```{r}
-
-ggplot(ks_clean, aes(main_category, total_days, fill=main_category)) + 
-  geom_boxplot(show.legend = FALSE) + 
-  scale_y_continuous(name = "Campaign Length (Days)",
-                           breaks = seq(0, 60, 5),
-                           limits=c(0, 60)) +
-  labs(
-    title ="Total days of Campaign by Project Category (2009-2019)",
-    x = "Project Category",
-    y = "Campaign Length",
-    color = "Project Category"
-  )+
-  theme_minimal()+
-  theme(
-      axis.title=element_text(size=9,face="bold"), 
-      axis.text.x=element_text(size=9,margin = margin(b=10)),
-      axis.text.y.left = element_text(margin = margin(l=10))
-      )+
-  mycolor_fill()+
-  coord_flip()
-
-```
-
+Berdasarkan detail dari chart pertumbuhan total pendanaan di kickstarter, meskipun total pendanaan Comics bukan yang paling tinggi, tapi hanya proyek Comics yang terus mengalami peningkatan pendanaan dari tahun 2009-2019, hal ini linier dengan jumlah proyek Comics yang terus meningkat. 
 
 
 
@@ -746,52 +731,16 @@ ggplot(ks_clean, aes(main_category, total_days, fill=main_category)) +
 
 
 
-## Bagaimana tingkat kesuksesan Project Campaign di Kickstarter?
+## Bagaimana tingkat kesuksesan Project Campaign di Kickstarter dari tahun 2009-2019?
 
-```{r}
-state.ratio <- table(year(ks_clean$launched_at), ks_clean$state)
-state.ratio <- cbind(state.ratio,aggregate(Freq~Var1,state.ratio,sum)[2])
-colnames(state.ratio) <- c("year","state","freq","total_freq")
-state.ratio$pct <- state.ratio$freq/state.ratio$total_freq
-
-ggplot(state.ratio, aes(x=year,y=pct,fill=state), group=state)+
-geom_bar(stat="identity") +
-labs(
-  title = "Rasio Kesuksesan Project Campaign per Tahun (2009-2019)",
-  x= "Tahun",
-  y= "Total Project"
-)+
-scale_y_continuous(labels=scales::percent) + 
-geom_text(aes(label=paste0(round(pct*100,1),"%")),
-          position=position_stack(vjust=0.5), 
-          colour="white", size=3)+
-coord_flip()+
-theme_minimal()+
-theme(
-      axis.title=element_text(size=9,face="bold"), 
-      axis.text.x=element_text(size=9,margin = margin(b=10)),
-      axis.text.y.left = element_text(margin = margin(l=10)),
-      legend.position = "bottom"
-    ) + 
-mycolor_fill()
-
-
-```
-
-
-
-
-***
-
-<br>
-
+Suatu Project Campaign di Kickstarter dikatakan sukses apabila jumlah pendanaan (Pledged) yang didapatkan mencapai atau lebih dari jumlah pendanaan minimum (Goal) yang ditentukan ketika project campaign launch, dan apabila sebaliknya maka Project Campaign dikatakan gagal. **lantas bagaimana distribusi pendanaan dan goal yang hendak dicapai?**
 
 ```{r}
 usd.amounts <- gather(data=ks_clean, key=type, value=amount, usd_pledged, usd_goal, factor_key=T)
 
 ggplot(usd.amounts, aes(log(amount+1), fill=type)) + 
   geom_histogram(alpha=0.5, position="identity",binwidth = 1) + 
-  ggtitle("Distribution of log(Pledged Amount) vs. log(Goal Amount)") +
+  ggtitle("Distribution of log(USD Pledged Amount) vs. log(USD Goal Amount)") +
   xlab("log(USD Pledged Amount)") + 
   ylab("Frequency") + 
   theme_minimal()+
@@ -802,14 +751,166 @@ ggplot(usd.amounts, aes(log(amount+1), fill=type)) +
         legend.position = "bottom"
       ) + 
   mycolor_fill()
+```
 
+Goal yang diharapkan tampaknya terdistribusi secara normal, sedangkan pendanaan yang diberikan (usd_pledged) tidak berdistribusi secara normal. Memang distribusi pendanaan yang diberikan lumayan berpusat disisi, tengah namun frekuensinya lebih rendah dari distribusi goal. Kemudian distribusi pendanaan bagian kiri cukup tinggi, hal ini mewakili proyek-proyek yang menerima pendanaan sedikit atau tidak mendapatkan pendanaan sama sekali. Berdasarkan grafik distribusi diatas, dapat dikatakan sebagian besar proyek tidak berhasil mendapatkan pendanaan yang diharapkan sesuai goal-nya. Jika begitu, **bagaimana tingkat kesuksesan Project Campaign di Kickstarter?**
+
+
+```{r, fig.asp=0.4,  fig.width = 11}
+
+state.ratio <- table(year(ks_clean$launched_at), ks_clean$state)
+state.ratio <- cbind(state.ratio,aggregate(Freq~Var1,state.ratio,sum)[2])
+colnames(state.ratio) <- c("year","state","freq","total_freq")
+state.ratio$pct <- state.ratio$freq/state.ratio$total_freq
+
+ggplot(state.ratio, aes(x=year,y=pct,fill=state), group=state)+
+geom_bar(stat="identity") +
+labs(
+  title = "Ratio of Successfull vs Failed (2009-2019)",
+  x= "Year",
+  y= "Ratio"
+)+
+scale_y_continuous(labels=scales::percent) + 
+geom_text(aes(label=paste0(round(pct*100,1),"%")),
+          position=position_stack(vjust=0.5), 
+          colour="white", size=3)+
+coord_flip()+
+theme_minimal()+
+theme(
+      axis.title=element_text(size=9,face="bold"), 
+      axis.text.x=element_text(size=10,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10)),
+      legend.position = "right",
+      legend.margin=margin(t = 0,l=0,r=0, unit='pt')
+    ) + 
+mycolor_fill() -> p_ratio
+
+
+ggplot(total.project,aes(x=Var1, y=Freq, fill=Freq))+
+geom_bar(stat = "identity", position = "dodge",width = 0.9, show.legend = FALSE)+
+geom_text(aes(label=Freq, y=Freq+2000), size=3) +
+labs(
+  title = "Total Project (2009-2019)",
+  x="Year",
+  y="Total of Project Campaign"
+)+
+theme_minimal()+
+ theme(
+      axis.title=element_text(size=9, face="bold"),
+      axis.text.x=element_text(size=10,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10))
+      ) +
+scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orange"))+
+  coord_flip() -> p_total
+
+
+library(cowplot)
+#grid.arrange(p_ratio,p_total, ncol = 2,rel_widths = c(1/5, 1/5))
+
+plot_grid(p_ratio, p_total, align = "h", ncol = 2, rel_widths = c(0.6, 0.4))
 
 ```
 
+Dari tahun 2009-2015, jumlah proyek di kickstrater selalu meningkat, namun tingkat kesusksesan proyek cenderung naik turun. Tingkat kesuksesan proyek dari tahun 2009-2013 cenderung naik turun tapi selalu diatas 75%, namun tingkat kesuksesan menurun drastis pada tahun 2014 dan terus menurun hingga tahun 2015. 
+
+Tahun 2015 merupakan tahun yang unik di Kickstarter. Jumlah proyek paling tinggi dan tingkat kesuksesan paling rendah terjadi ditahun 2015. Tingkat kesuksesan project campaign yang launch ditahun 2015 hanya sebesar 44% dari 32,236 proyek. Saya berasumsi Kickstarter melakukan koreksi dan perbaikan mulai tahun 2015. Asumsi ini saya ambil karena tingkat kesuksesan Project Campaign di Kickstarter terus meningkat hingga tahun 2019 dengan rata-rata peningkatan setiap tahun dari 2015-2019 sebesar 6.5%. Tingkat kesuksesan ditahun 2019 sebesar 70.1% dari 24,191 proyek.
+
+
+***
+
+<br>
+
+
+## Apa faktor yang paling mempengaruhi jumlah pendanaan di Kicstarter?
+
+
+```{r, fig.align='center', fig.asp=0.5, warning=F, error=F}
+
+ggcorr(ks_clean, label = T, hjust=0.7, size=3, palette = "RdGy", legend.size = 3)+
+  labs(
+    title ="Correlation Matrix"
+  )+
+  theme_minimal()+
+  theme(
+        plot.title = element_text(hjust = 0.5, margin = margin(b=-25,unit="pt")),
+        axis.title=element_text(size=9,face="bold"), 
+        axis.text.x=element_text(size=9,margin = margin(b=10))
+  ) 
+
+```
+
+Matriks korelasi diatas menunjukan bahwa faktor yang paling mempengaruhi jumlah pendanaan proyek adalah jumlah kontributor pemberi dana. Mari kita buktikan apakah pertumbuhan jumlah kontributor dan jumlah pendanaan setiap tahun linear?
+
+
+```{r, fig.asp=0.5, fig.width=12}
+ks_backer <- aggregate(backers_count~year(ks_clean$launched_at),ks_clean,sum)
+colnames(ks_backer) <- c("year","backers")
+
+ggplot(ks_backer, aes(x=as.factor(year),y=backers,fill=backers))+
+geom_bar(stat = "identity",show.legend = FALSE)+
+geom_text(aes(label=comma(backers),y=backers+370000), size=3)+
+labs(
+  title ="Total Backers (2009-2019)",
+  x = "Year",
+  y = "Total Backer"
+)+
+scale_y_continuous(labels = comma)+
+coord_flip()+
+theme_minimal()+
+theme(
+      axis.title=element_text(size=9,face="bold"), 
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left =element_text(margin = margin(l=10))
+) + 
+scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orange"))->backer1
+
+
+
+ggplot(total.pledged, aes(x=as.factor(year), y=total_pledged/1000000, fill=total_pledged))+
+geom_bar(stat = "identity", position = "dodge",width = 0.9, show.legend = FALSE)+
+ geom_text(aes(label=paste0("$",round(total_pledged/1000000,1)),y=round(total_pledged/1000000,1)+25), size=3)+
+labs(
+  title = "Total Pledged Amount (2009-2019)",
+  x= NULL,
+  y="Total Pledged Amount (USD Millions)"
+)+
+coord_flip()+
+theme_minimal()+
+theme(
+      axis.title=element_text(size=9, face="bold"),
+      axis.text.x=element_text(size=9,margin = margin(b=10)),
+      axis.text.y.left = element_text(margin = margin(l=10))
+  ) + 
+scale_fill_gradient(low=mycolor_hex("light_blue"), high=mycolor_hex("light_orange"))->pledged1
+
+
+grid.arrange(backer1, pledged1,ncol=2)
+
+```
+
+Berdasarkan perbandingan antara grafik diatas, pola naik turun dari jumlah pemberi dana dan total pendanaan proyek dari tahun 2009-2019 selalu sama setiap tahunnya. Dengan begitu dapat disimpulkan bahwa, **jika jumlah pemberi dana meningkat maka total pendanaan proyek di kickstarter juga akan meningkat**.
+
+***
+
+<br>
+
 
 # Summary
+
+Dari tahun 2009-2019, pola dari jumlah proyek dan jumlah pendanaan yang mengikuti Project Campaign di Kickstarter relatif naik-turun. Tahun 2015 merupakan tahun dimana jumlah proyek di kickstarter paling banyak sekaligus tahun dimana tingkat kesuksesan proyek terendah. Sebuah proyek dikatakan sukses apabila jumlah dana yang didapatkan mencapai atau lebih dari goal yang ditentukan. Sesuai analisa diatas, jumlah dana yang didapatkan dari sebuah proyek sangat tergantung dari jumlah kontributor yang memberikan dana. Sehingga saran yang dapat diberikan jika hendak mengikuti project campaign di Kickstarter yaitu:
+  1. Terus update terkait proyek apa yang sedang tren dan relevan.
+  2. Membuat target goal yang realistis.
+  3. Melakukan pemasaran melalui media-media yang bisa menjangkau banyak calon kontributor.
+  4. Bangun komunikasi dan berikan feedback ke calon kontributor maupun platform Kickstarter.
+
 
 
 <br>
 
 # Reference
+
+1. [Kickstrater](https://www.kickstarter.com/)
+2. [Kickstarter: Exploratory Data Analysis with R](https://www.kaggle.com/andrewjmah/kickstarter-exploratory-data-analysis-with-r)
+3. [Kickstarter: A data analysis](https://thehustle.co/archive/02102019d/)
+4. [Analyzing 380K Kickstarter Campaigns](https://towardsdatascience.com/analyzing-380k-kickstarter-campaigns-10649bbf4e91)
+5. [Top 50 ggplot2 Visualizations](http://r-statistics.co/Top50-Ggplot2-Visualizations-MasterList-R-Code.html)
